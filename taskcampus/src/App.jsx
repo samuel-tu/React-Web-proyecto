@@ -1,122 +1,94 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState, useEffect } from "react";
+import Header from "./components/Header";
+import TaskSummary from "./components/TaskSummary";
+import TaskList from "./components/TaskList";
+import TaskForm from "./components/TaskForm";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+    const [tareas, setTareas] = useState(() => {
+      const guardadas = localStorage.getItem("taskcampus-tareas");
+      return guardadas
+        ? JSON.parse(guardadas): [];
+    });
+    const [cargando, setCargando] = useState(false);
+    const [error, setError] = useState(null);
+    //Efecto 1
+    useEffect(() => {
+      const cargarDesdeAPI = async () => {
+        setCargando(true);
+        try{
+          const response = await fetch(
+            "https://jsonplaceholder.typicode.com/todos?_limit=10"
+          );
+          if (!response.ok) throw new Error('Error HTTP: ${response.status}');
+          const data = await response.json();
+          const tareasAdaptadas = data.map((item) => ({
+            id: item.id,
+            titulo: item.title,
+            completada: item.completed,
+          }));
+          setTareas(tareasAdaptadas);
+        }catch(err){
+          setError(err.message);
+        }finally{
+          setCargando(false);
+        }
+      };
+      cargarDesdeAPI();
+    }, []);
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    //Efecto 2
+    useEffect(() => {
+      localStorage.setItem("taskcampus-tareas", JSON.stringify(tareas));
+    }, [tareas]);
+    //Efecto 3
+    useEffect(() => {
+      const pendientes = tareas.filter((t) => !t.completada).length;
+      document.title = 'TaskCampus (${pendientes} pendientes)'
+    }, [tareas]);
+    //Efecto 4
+    useEffect(() => {
+      const timer = setInterval(() => {
+        console.log("TaskCampus activo");
+      }, 5000);
+      return () => clearInterval(timer);
+    }, []);
+    //Funcion 1
+    const agregarTarea = async (titulo) => {
+      const nuevaTarea = {id: Date.now(), titulo, completada: false };
+      setTareas([...tareas, nuevaTarea]);
+      try {
+        const response = await fetch("https://jsonplaceholder.typicode.com/todos", {
+          method: "POST",
+          headers: {"Content-Type": "apllication/json"},
+          body: JSON.stringify({title: titulo, completed: false, userId: 1}),
+        });
+        const data = await response.json();
+        console.log("Tareas creada en servidor:", data);
+      }catch{
+        console.error("Error al crear tarea en servidor:", err);
+      }
+    };
+    //Funcion 2
+    const completarTarea = (id) => {
+        setTareas((tareasActuales) =>
+            tareasActuales.map((tarea) =>
+                tarea.id === id
+                    ? { ...tarea, completada: true }
+                    : tarea
+            )
+        );
+    };
+
+    return (
+        <div className="app-container">
+            <Header title="TaskCampus" description="Gestor de tareas académicas"/>
+            <TaskSummary total={tareas.filter((tarea) => tarea.completada).length} />
+            <TaskForm onAgregar={agregarTarea}/> 
+            <TaskList tareas={tareas} onCompletar={completarTarea}/>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    );
+};
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
-}
-
-export default App
+export default App;
