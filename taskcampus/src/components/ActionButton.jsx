@@ -2,12 +2,12 @@ function ActionButton({ onReview }) {
   return (
     <section>
       <h2>Acciones</h2>
-      <button 
+      <Button 
         onClick={onReview} 
         className="task-button"
       >
         Revisar tareas
-      </button>
+      </Button>
     </section>
   );
 }

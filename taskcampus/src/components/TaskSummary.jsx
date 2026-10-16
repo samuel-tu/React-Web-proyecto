@@ -16,12 +16,7 @@ const TaskSummary = ({ onSeleccionar }) => {
                 Tareas completadas: <strong>{completadas}</strong>
             </p>
 
-            <button
-                onClick={marcarCompletadas}
-                className="task-button"
-            >
-                Marcar como completada
-            </button>
+            <button onClick={marcarCompletadas} className="task-button">Marcar como completada</button>
         </div>
     );
 };

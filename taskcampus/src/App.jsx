@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import Card from "./components/Card";
 import Header from "./components/Header";
+import Modal from "./components/Modal";
 import TaskSummary from "./components/TaskSummary";
 import TaskList from "./components/TaskList";
 import TaskForm from "./components/TaskForm";
@@ -11,8 +13,17 @@ const App = () => {
       return guardadas
         ? JSON.parse(guardadas): [];
     });
+    
+    const [tareaAEliminar, setTareaAEliminar] = useState(null);
+    const handleEliminar = () => {
+      setTareas((prev) => prev.filter((t) => t.id !== tareaAEliminar));
+      setTareaAEliminar(null);
+    };
+
     const [cargando, setCargando] = useState(false);
     const [error, setError] = useState(null);
+
+
     //Efecto 1
     useEffect(() => {
       const cargarDesdeAPI = async () => {
@@ -84,11 +95,23 @@ const App = () => {
     return (
         <div className="app-container">
             <Header title="TaskCampus" description="Gestor de tareas académicas"/>
-            <TaskSummary total={tareas.filter((tarea) => tarea.completada).length} />
+            <Card titulo="Resumen de tareas">
+                <TaskSummary total={tareas.length}/>
+            </Card>
             <TaskForm onAgregar={agregarTarea}/> 
-            <TaskList tareas={tareas} onCompletar={completarTarea}/>
+            <Card titulo="Mis tareas">
+              <TaskList tareas={tareas} onCompletar={completarTarea} onEliminar={setTareaAEliminar} cargando={cargando} error={error}/>
+            </Card>
+            
+            <Modal
+              visible={tareaAEliminar !== null}
+              mensaje="¿Estas seguro de que deseas eliminar esta tarea?"
+              onConfirmar={handleEliminar}
+              onCancelar={() => setTareaAEliminar(null)}/>
         </div>
     );
 };
+
+
 
 export default App;
