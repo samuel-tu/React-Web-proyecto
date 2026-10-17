@@ -1,4 +1,10 @@
 import { useState, useEffect } from "react";
+import {
+  getTareas,
+  postTarea,
+  putTarea,
+  deleteTarea,
+} from "../services/tareasService";
 
 // URL base de la API
 const API_URL = "https://jsonplaceholder.typicode.com/todos";
@@ -10,53 +16,29 @@ const useTareas = () => {
 
   // GET - Carga inicial de tareas
   useEffect(() => {
-    const cargarTareas = async () => {
+    const cargar = async () => {
       try {
-        const res = await fetch(`${API_URL}?_limit=10`);
-        if (!res.ok) throw new Error("Error al cargar las tareas");
-
-        const datos = await res.json();
-        const tareasFormateadas = datos.map((t) => ({
-          id: t.id,
-          titulo: t.title,
-          completada: t.completed,
-        }));
-
-        setTareas(tareasFormateadas);
+        const datos = await getTareas(10);
+        setTareas(
+          datos.map((t) => ({ id: t.id, titulo: t.title, completada: t.completed }))
+        );
       } catch (err) {
         setError(err.message);
       } finally {
         setCargando(false);
       }
     };
-
-    cargarTareas();
+    cargar();
   }, []);
 
   // POST - Crea una nueva tarea
   const crearTarea = async (titulo) => {
     try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: titulo,
-          completed: false,
-          userId: 1,
-        }),
-      });
-
-      if (!res.ok) throw new Error("Error al crear la tarea");
-
-      const nueva = await res.json();
-
-      const tareaLocal = {
-        id: Date.now(),
-        titulo: nueva.title,
-        completada: nueva.completed,
-      };
-
-      setTareas((prev) => [tareaLocal, ...prev]);
+      const nueva = await postTarea(titulo);
+      setTareas((prev) => [
+        {id: Date.now(), titulo: nueva.title, completada: nueva.completed},
+        ...prev,
+      ]);
     } catch (err) {
       setError(err.message);
     }
@@ -65,21 +47,8 @@ const useTareas = () => {
   // PUT - Modifica una tarea existente
   const actualizarTarea = async (id, cambios) => {
     try {
-      // Actualizamos primero el estado local para respuesta inmediata
-      setTareas((prev) =>
-        prev.map((t) => (t.id === id ? { ...t, ...cambios } : t))
-      );
-
-      // Si es una tarea creada localmente (ID generado por Date.now), no existe en el servidor remoto
-      if (id > 200) return;
-
-      const res = await fetch(`${API_URL}/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(cambios),
-      });
-
-      if (!res.ok) throw new Error("Error al actualizar la tarea");
+      await putTarea(id, cambios);
+      setTareas((prev) => prev.map((t) => (t.id === id ? { ...t, ...cambios } : t)));
     } catch (err) {
       setError(err.message);
     }
@@ -88,16 +57,8 @@ const useTareas = () => {
   // DELETE - Elimina una tarea
   const eliminarTarea = async (id) => {
     try {
+      await deleteTarea(id);
       setTareas((prev) => prev.filter((t) => t.id !== id));
-
-      // Si es una tarea local, no necesita eliminarse en el servidor
-      if (id > 200) return;
-
-      const res = await fetch(`${API_URL}/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) throw new Error("Error al eliminar la tarea");
     } catch (err) {
       setError(err.message);
     }

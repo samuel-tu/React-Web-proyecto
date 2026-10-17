@@ -21,6 +21,14 @@ const App = () => {
 
   const [tareaAEliminar, setTareaAEliminar] = useState(null);
 
+  const [filtro, setFiltro] = useState("todas");
+
+  const tareasFiltradas = tareas.filter((t) => {
+    if (filtro === "completadas") return t.completada;
+    if (filtro === "pendientes") return !t.completada;
+    return true;
+  });
+
   //Efecto 3
   useEffect(() => {
     const pendientes = tareas.filter((t) => !t.completada).length;
@@ -58,6 +66,10 @@ const App = () => {
           total={tareas.length}
           completadas={tareas.filter((t) => t.completada).length}
           pendientes={tareas.filter((t) => !t.completada).length}
+
+          mostrando={tareasFiltradas.length}
+          filtroActual={filtro}
+          
         />
       </Card>
       <TaskForm onAgregar={handleAgregarTarea} />
@@ -67,6 +79,8 @@ const App = () => {
         <Card titulo="Mis tareas">
           <TaskList
             tareas={tareas}
+            filtro={filtro}
+            onCambiarFiltro={setFiltro}
             onCompletar={(id) =>
               handleToggleCompletada(
                 id,

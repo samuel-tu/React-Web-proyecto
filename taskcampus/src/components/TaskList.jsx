@@ -1,11 +1,8 @@
 import Button from "./Button";
 import Badge from "./Badge";
 import EmptyState from "./EmptyState";
-import { useState } from "react";
 
-const TaskList = ({ tareas, onCompletar, onEliminar, onToggle }) => {
-  const [filtro, setFiltro] = useState("todas");
-
+const TaskList = ({ tareas, filtro, onCambiarFiltro, onCompletar, onEliminar, onToggle }) => {
   const tareasFiltradas = tareas.filter((t) => {
     if (filtro === "pendientes") return !t.completada;
     if (filtro === "completadas") return t.completada;
@@ -26,17 +23,17 @@ const TaskList = ({ tareas, onCompletar, onEliminar, onToggle }) => {
       <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
         <Button
           label="📋 Todas"
-          onClick={() => setFiltro("todas")}
+          onClick={() => onCambiarFiltro("todas")}
           variant={filtro === "todas" ? "primary" : "secondary"}
         />
         <Button
           label="⏳ Pendientes"
-          onClick={() => setFiltro("pendientes")}
+          onClick={() => onCambiarFiltro("pendientes")}
           variant={filtro === "pendientes" ? "primary" : "secondary"}
         />
         <Button
           label="✅ Completadas"
-          onClick={() => setFiltro("completadas")}
+          onClick={() => onCambiarFiltro("completadas")}
           variant={filtro === "completadas" ? "primary" : "secondary"}
         />
       </div>
