@@ -55,6 +55,55 @@ body {
   color: #1e3a8a;
 }
 
+
+.task-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  text-align: center;
+}
+
+.task-summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #475569;
+  font-weight: 600;
+}
+
+.task-summary-count {
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+.task-summary-count-total {
+  color: #2563eb;
+}
+
+.task-summary-count-completadas {
+  color: #16a34a;
+}
+
+.task-summary-count-pendientes {
+  color: #ca8a04;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 12px;
+  color: #64748b;
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 2rem;
+}
+
+
 .task-list {
   list-style: none;
   padding: 0;

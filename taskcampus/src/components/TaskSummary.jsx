@@ -1,22 +1,23 @@
 
 import { useState } from "react";
 
-const TaskSummary = ({ onSeleccionar }) => {
-    const [completadas, setCompletadas] = useState(0);
-
-    const marcarCompletadas = () => {
-        setCompletadas(completadas + 1);
-    };
+const TaskSummary = ({ total, completadas, pendientes }) => {
+    const resumen = [
+        { cantidad: total, etiqueta: "Total", color: "total" },
+        { cantidad: completadas, etiqueta: "Completadas", color: "completadas" },
+        { cantidad: pendientes, etiqueta: "Pendientes", color: "pendientes" },
+    ];
 
     return (
-        <div className="card">
-            <h2 className="section-title">Resumen de Tareas</h2>
-
-            <p>
-                Tareas completadas: <strong>{completadas}</strong>
-            </p>
-
-            <button onClick={marcarCompletadas} className="task-button">Marcar como completada</button>
+        <div className="task-summary">
+            {resumen.map(({ cantidad, etiqueta, color }) => (
+                <div className="task-summary-item" key={color}>
+                    <strong className={`task-summary-count task-summary-count-${color}`}>
+                        {cantidad}
+                    </strong>
+                    <span>{etiqueta}</span>
+                </div>
+            ))}
         </div>
     );
 };

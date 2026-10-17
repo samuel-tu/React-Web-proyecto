@@ -1,5 +1,6 @@
 import Button from "./Button";
 import Badge from "./Badge";
+import EmptyState from "./EmptyState";
 import { useState } from "react";
 
 const TaskList = ({ tareas, onCompletar, onEliminar, onToggle }) => {
@@ -40,44 +41,51 @@ const TaskList = ({ tareas, onCompletar, onEliminar, onToggle }) => {
         />
       </div>
 
-      {/*Mensaje si no hay tareas en el filtro activo*/}
-      {tareasFiltradas.length === 0 && (
-        <p style={{ textAlign: "center", color: "#94a3b8" }}>
-          No hay tareas en esta categoría 🎉
-        </p>
+      {tareasFiltradas.length === 0 ? (
+        <EmptyState
+          mensaje={
+            tareas.length === 0
+              ? "¡Aún no tienes tareas! Agrega una para comenzar."
+              : "No hay tareas en esta categoría."
+          }
+          icono={tareas.length === 0 ? "📝" : "🎉"}
+        />
+      ) : (
+        <ul className="task-list">
+          {tareasFiltradas.map((tarea) => (
+            <li key={tarea.id} className="task-item">
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1 }}>
+                <Badge
+                  texto={tarea.completada ? "completada" : "pendiente"}
+                  onClick={() => handleCompletar(tarea.id, tarea.completada)}
+                />
+                <span
+                  style={{
+                    textDecoration: tarea.completada ? "line-through" : "none",
+                    color: tarea.completada ? "#94a3b8" : "inherit",
+                  }}
+                >
+                  {tarea.titulo}
+                </span>
+              </div>
+
+              <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+                <Button
+                  label={tarea.completada ? "Desmarcar" : "Completar"}
+                  onClick={() => handleCompletar(tarea.id, tarea.completada)}
+                  variant={tarea.completada ? "success" : "primary"}
+                />
+                {/* Este botón activba el modal */}
+                <Button
+                  label="Eliminar"
+                  onClick={() => onEliminar(tarea.id)}
+                  variant="danger"
+                />
+              </div>
+            </li>
+          ))}
+        </ul>
       )}
-
-      <ul className="task-list">
-        {tareasFiltradas.map((tarea) => (
-          <li key={tarea.id} className="task-item">
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1 }}>
-              <Badge texto={tarea.completada ? "completada" : "pendiente"} />
-              <span
-                style={{
-                  textDecoration: tarea.completada ? "line-through" : "none",
-                  color: tarea.completada ? "#94a3b8" : "inherit",
-                }}
-              >
-                {tarea.titulo}
-              </span>
-            </div>
-
-            <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
-              <Button
-                label={tarea.completada ? "Desmarcar" : "Completar"}
-                onClick={() => handleCompletar(tarea.id, tarea.completada)}
-                variant={tarea.completada ? "success" : "primary"}
-              />
-              {/* Este botón activba el modal */}
-              <Button
-                label="Eliminar"
-                onClick={() => onEliminar(tarea.id)}
-                variant="danger"
-              />
-            </div>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 };
