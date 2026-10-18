@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import useTareas from "./hooks/useTareas";
-import Card from "./components/Card";
 import Header from "./components/Header";
+import Navigation from "./components/Navigation";
 import Modal from "./components/Modal";
-import TaskSummary from "./components/TaskSummary";
-import TaskList from "./components/TaskList";
-import TaskForm from "./components/TaskForm";
+import SummaryView from "./views/SummaryView";
+import TasksView from "./views/TasksView";
+import NewTaskView from "./views/NewTaskView";
 import "./App.css";
 
 const App = () => {
@@ -20,6 +20,9 @@ const App = () => {
   } = useTareas();
 
   const [tareaAEliminar, setTareaAEliminar] = useState(null);
+
+  // Estado de navegación para alternar vistas (RF13)
+  const [vistaActiva, setVistaActiva] = useState("resumen");
 
   const [filtro, setFiltro] = useState("todas");
 
@@ -44,8 +47,9 @@ const App = () => {
   }, []);
 
   //Funcion 1
-  const handleAgregarTarea = (titulo) => {
-    crearTarea(titulo);
+  const handleAgregarTarea = async (titulo) => {
+    await crearTarea(titulo);
+    setVistaActiva("tareas"); // Tras crear la tarea, redirige a la lista
   };
 
   //Funcion 2
@@ -60,38 +64,46 @@ const App = () => {
 
   return (
     <div className="app-container">
+      {/* Encabezado y Navegación presentes en todas las vistas */}
       <Header title="TaskCampus" description="Gestiona tus tareas académicas" />
-      <Card titulo="Resumen de tareas">
-        <TaskSummary
+      <Navigation vistaActiva={vistaActiva} onCambiarVista={setVistaActiva} />
+
+      {/* Vista 1: Resumen de tareas */}
+      {vistaActiva === "resumen" && (
+        <SummaryView
           total={tareas.length}
           completadas={tareas.filter((t) => t.completada).length}
           pendientes={tareas.filter((t) => !t.completada).length}
-
           mostrando={tareasFiltradas.length}
           filtroActual={filtro}
-          
         />
-      </Card>
-      <TaskForm onAgregar={handleAgregarTarea} />
-      {cargando && <p className="estado-carga">⏳ Cargando tareas...</p>}
-      {error && <p className="estado-error">⚠️ Error: {error}</p>}
-      {!cargando && !error && (
-        <Card titulo="Mis tareas">
-          <TaskList
-            tareas={tareas}
-            filtro={filtro}
-            onCambiarFiltro={setFiltro}
-            onCompletar={(id) =>
-              handleToggleCompletada(
-                id,
-                tareas.find((t) => t.id === id)?.completada
-              )
-            }
-            onEliminar={setTareaAEliminar}
-            onEditarTitulo={editarTitulo}
-          />
-        </Card>
       )}
+
+      {/* Vista 2: Agregar nueva tarea */}
+      {vistaActiva === "nueva" && (
+        <NewTaskView onAgregar={handleAgregarTarea} />
+      )}
+
+      {/* Vista 3: Listado de tareas */}
+      {vistaActiva === "tareas" && (
+        <TasksView
+          tareas={tareas}
+          filtro={filtro}
+          onCambiarFiltro={setFiltro}
+          onCompletar={(id) =>
+            handleToggleCompletada(
+              id,
+              tareas.find((t) => t.id === id)?.completada
+            )
+          }
+          onEliminar={setTareaAEliminar}
+          onEditarTitulo={editarTitulo}
+          cargando={cargando}
+          error={error}
+        />
+      )}
+
+      {/* Modal global de confirmación para eliminar */}
       <Modal
         visible={tareaAEliminar !== null}
         mensaje="¿Seguro que deseas eliminar esta tarea? Esta acción no se puede deshacer."

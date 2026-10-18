@@ -1,14 +1,15 @@
 import Button from "./Button";
-import Badge from "./Badge";
-import EmptyState from "./EmptyState";
+import TaskItem from "./TaskItem";
 
-const TaskList = ({ tareas, filtro, onCambiarFiltro, onCompletar, onEliminar, onToggle }) => {
-  const tareasFiltradas = tareas.filter((t) => {
-    if (filtro === "pendientes") return !t.completada;
-    if (filtro === "completadas") return t.completada;
-    return true;
-  });
-
+const TaskList = ({
+  tareas,
+  filtro,
+  onCambiarFiltro,
+  onCompletar,
+  onEliminar,
+  onEditarTitulo,
+  onToggle,
+}) => {
   const handleCompletar = (id, completadaActual) => {
     if (onToggle) {
       onToggle(id, completadaActual);
@@ -19,7 +20,7 @@ const TaskList = ({ tareas, filtro, onCambiarFiltro, onCompletar, onEliminar, on
 
   return (
     <div>
-      {/* Botones de filtro */}
+      {/* Botones de filtro de estado */}
       <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
         <Button
           label="📋 Todas"
@@ -38,48 +39,21 @@ const TaskList = ({ tareas, filtro, onCambiarFiltro, onCompletar, onEliminar, on
         />
       </div>
 
-      {tareasFiltradas.length === 0 ? (
-        <EmptyState
-          mensaje={
-            tareas.length === 0
-              ? "¡Aún no tienes tareas! Agrega una para comenzar."
-              : "No hay tareas en esta categoría."
-          }
-          icono={tareas.length === 0 ? "📝" : "🎉"}
-        />
+      {tareas.length === 0 ? (
+        <div className="empty-state" role="status">
+          <span className="empty-state-icon" aria-hidden="true">🔍</span>
+          <p>No se encontraron tareas con ese criterio.</p>
+        </div>
       ) : (
         <ul className="task-list">
-          {tareasFiltradas.map((tarea) => (
-            <li key={tarea.id} className="task-item">
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1 }}>
-                <Badge
-                  texto={tarea.completada ? "completada" : "pendiente"}
-                  onClick={() => handleCompletar(tarea.id, tarea.completada)}
-                />
-                <span
-                  style={{
-                    textDecoration: tarea.completada ? "line-through" : "none",
-                    color: tarea.completada ? "#94a3b8" : "inherit",
-                  }}
-                >
-                  {tarea.titulo}
-                </span>
-              </div>
-
-              <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
-                <Button
-                  label={tarea.completada ? "Desmarcar" : "Completar"}
-                  onClick={() => handleCompletar(tarea.id, tarea.completada)}
-                  variant={tarea.completada ? "success" : "primary"}
-                />
-                {/* Este botón activba el modal */}
-                <Button
-                  label="Eliminar"
-                  onClick={() => onEliminar(tarea.id)}
-                  variant="danger"
-                />
-              </div>
-            </li>
+          {tareas.map((tarea) => (
+            <TaskItem
+              key={tarea.id}
+              tarea={tarea}
+              onCompletar={handleCompletar}
+              onEliminar={onEliminar}
+              onEditarTitulo={onEditarTitulo}
+            />
           ))}
         </ul>
       )}

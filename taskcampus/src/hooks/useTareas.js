@@ -6,15 +6,12 @@ import {
   deleteTarea,
 } from "../services/tareasService";
 
-// URL base de la API
-const API_URL = "https://jsonplaceholder.typicode.com/todos";
-
 const useTareas = () => {
   const [tareas, setTareas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
-  // GET - Carga inicial de tareas
+  // GET - Carga inicial de tareas (RF01)
   useEffect(() => {
     const cargar = async () => {
       try {
@@ -31,12 +28,12 @@ const useTareas = () => {
     cargar();
   }, []);
 
-  // POST - Crea una nueva tarea
+  // POST - Crea una nueva tarea (RF03)
   const crearTarea = async (titulo) => {
     try {
       const nueva = await postTarea(titulo);
       setTareas((prev) => [
-        {id: Date.now(), titulo: nueva.title, completada: nueva.completed},
+        { id: Date.now(), titulo: nueva.title || titulo, completada: false },
         ...prev,
       ]);
     } catch (err) {
@@ -44,7 +41,7 @@ const useTareas = () => {
     }
   };
 
-  // PUT - Modifica una tarea existente
+  // PUT - Modifica una tarea existente (RF05)
   const actualizarTarea = async (id, cambios) => {
     try {
       await putTarea(id, cambios);
@@ -54,7 +51,13 @@ const useTareas = () => {
     }
   };
 
-  // DELETE - Elimina una tarea
+  // PUT - Edición específica del título con validación (RF06)
+  const editarTitulo = async (id, nuevoTitulo) => {
+    if (!nuevoTitulo || nuevoTitulo.trim() === "") return;
+    await actualizarTarea(id, { titulo: nuevoTitulo.trim() });
+  };
+
+  // DELETE - Elimina una tarea (RF07)
   const eliminarTarea = async (id) => {
     try {
       await deleteTarea(id);
@@ -64,7 +67,15 @@ const useTareas = () => {
     }
   };
 
-  return { tareas, cargando, error, crearTarea, actualizarTarea, eliminarTarea };
+  return {
+    tareas,
+    cargando,
+    error,
+    crearTarea,
+    actualizarTarea,
+    editarTitulo,
+    eliminarTarea,
+  };
 };
 
 export default useTareas;
