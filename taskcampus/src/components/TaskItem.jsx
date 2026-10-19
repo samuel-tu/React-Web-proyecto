@@ -1,6 +1,12 @@
 import { useState, useRef } from "react";
 import Button from "./Button";
 
+const colorMap = {
+  pendiente: "#ca8a04",
+  completada: "#16a34a",
+  en_progreso: "#2563eb",
+};
+
 const TaskItem = ({
   tarea,
   onCompletar,
@@ -11,6 +17,9 @@ const TaskItem = ({
   const [editando, setEditando] = useState(false);
   const [tituloEditado, setTituloEditado] = useState(tarea.titulo);
   const commitEnCurso = useRef(false);
+
+  const estadoTexto = tarea.completada ? "completada" : "pendiente";
+  const badgeColor = colorMap[estadoTexto] || "#6b7280";
 
   const iniciarEdicion = () => {
     if (guardando) return;
@@ -23,10 +32,13 @@ const TaskItem = ({
     if (commitEnCurso.current || guardando) return;
     commitEnCurso.current = true;
     const limpio = tituloEditado.trim();
+    
     if (limpio && limpio !== tarea.titulo) {
       if (onEditarTitulo) {
         onEditarTitulo(tarea.id, { titulo: limpio });
       }
+    } else {
+      setTituloEditado(tarea.titulo);
     }
     setEditando(false);
   };
@@ -46,7 +58,7 @@ const TaskItem = ({
           onClick={handleToggle}
           disabled={guardando}
           style={{
-            backgroundColor: tarea.completada ? "#16a34a" : "#ca8a04",
+            backgroundColor: badgeColor,
             color: "#ffffff",
             padding: "3px 10px",
             borderRadius: "12px",
@@ -56,7 +68,7 @@ const TaskItem = ({
             cursor: guardando ? "not-allowed" : "pointer",
           }}
         >
-          {tarea.completada ? "completada" : "pendiente"}
+          {estadoTexto}
         </button>
 
         {editando ? (
@@ -69,15 +81,27 @@ const TaskItem = ({
               if (e.key === "Enter") {
                 e.preventDefault();
                 guardarCambios();
+              } else if (e.key === "Escape") {
+                setTituloEditado(tarea.titulo);
+                setEditando(false);
               }
             }}
             onBlur={guardarCambios}
             autoFocus
             disabled={guardando}
+            style={{
+              flex: 1,
+              padding: "4px 8px",
+              fontSize: "0.95rem",
+              borderRadius: "4px",
+              border: "1px solid #3b82f6",
+              outline: "none",
+            }}
           />
         ) : (
           <span
             onDoubleClick={iniciarEdicion}
+            title="Doble clic para editar"
             style={{
               textDecoration: tarea.completada ? "line-through" : "none",
               color: tarea.completada ? "#94a3b8" : "inherit",
@@ -85,6 +109,7 @@ const TaskItem = ({
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
+              flex: 1,
             }}
           >
             {tarea.titulo}
