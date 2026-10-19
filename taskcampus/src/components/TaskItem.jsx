@@ -1,107 +1,69 @@
-import { useState } from "react";
 import Button from "./Button";
+import TaskItem from "./TaskItem";
 
-const colorMap = {
-  pendiente: "#f59e0b",
-  completada: "#16a34a",
-  en_progreso: "#2563eb",
-};
-
-const TaskItem = ({ tarea, onCompletar, onEliminar, onEditarTitulo }) => {
-  const [editando, setEditando] = useState(false);
-  const [nuevoTitulo, setNuevoTitulo] = useState(tarea.titulo);
-
-  const estadoTexto = tarea.completada ? "completada" : "pendiente";
-  const badgeColor = colorMap[estadoTexto] || "#6b7280";
-
-  const badgeStyle = {
-    backgroundColor: badgeColor,
-    color: "#fff",
-    padding: "2px 10px",
-    borderRadius: "12px",
-    fontSize: "0.75rem",
-    fontWeight: "600",
-    border: "none",
-    fontFamily: "inherit",
-    cursor: "pointer",
-  };
-
-  const guardarEdicion = () => {
-    if (nuevoTitulo.trim() !== "" && nuevoTitulo !== tarea.titulo) {
-      onEditarTitulo(tarea.id, nuevoTitulo.trim());
-    } else {
-      setNuevoTitulo(tarea.titulo);
-    }
-    setEditando(false);
-  };
-
-  const manejarKeyDown = (e) => {
-    if (e.key === "Enter") {
-      guardarEdicion();
-    } else if (e.key === "Escape") {
-      setNuevoTitulo(tarea.titulo);
-      setEditando(false);
-    }
-  };
+const TaskList = ({
+  tareas = [],
+  tareasTotales = 0,
+  busqueda = "",
+  filtro = "todas",
+  onCambiarFiltro,
+  onCompletar,
+  onEliminar,
+  onEditarTitulo,
+  guardando,
+}) => {
+  const hayBusquedaOClasificacion = busqueda.trim() !== "" || filtro !== "todas";
 
   return (
-    <li className="task-item">
-      <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1 }}>
-        <button
-          type="button"
-          onClick={() => onCompletar(tarea.id, tarea.completada)}
-          style={badgeStyle}
-          aria-label={`Cambiar estado de la tarea (${estadoTexto})`}
-        >
-          {estadoTexto}
-        </button>
-
-        {editando ? (
-          <input
-            type="text"
-            value={nuevoTitulo}
-            onChange={(e) => setNuevoTitulo(e.target.value)}
-            onBlur={guardarEdicion}
-            onKeyDown={manejarKeyDown}
-            autoFocus
-            style={{
-              flex: 1,
-              padding: "4px 8px",
-              fontSize: "0.95rem",
-              borderRadius: "4px",
-              border: "1px solid #3b82f6",
-              outline: "none",
-            }}
-          />
-        ) : (
-          <span
-            onDoubleClick={() => setEditando(true)}
-            title="Doble clic para editar"
-            style={{
-              textDecoration: tarea.completada ? "line-through" : "none",
-              color: tarea.completada ? "#94a3b8" : "inherit",
-              cursor: "pointer",
-            }}
-          >
-            {tarea.titulo}
-          </span>
-        )}
-      </div>
-
-      <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+    <div>
+      <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
         <Button
-          label={tarea.completada ? "Desmarcar" : "Completar"}
-          onClick={() => onCompletar(tarea.id, tarea.completada)}
-          variant={tarea.completada ? "success" : "primary"}
+          label="📋 Todas"
+          onClick={() => onCambiarFiltro("todas")}
+          variant={filtro === "todas" ? "primary" : "secondary"}
+          disabled={guardando}
         />
         <Button
-          label="Eliminar"
-          onClick={() => onEliminar(tarea.id)}
-          variant="danger"
+          label="⏳ Pendientes"
+          onClick={() => onCambiarFiltro("pendientes")}
+          variant={filtro === "pendientes" ? "primary" : "secondary"}
+          disabled={guardando}
+        />
+        <Button
+          label="✅ Completadas"
+          onClick={() => onCambiarFiltro("completadas")}
+          variant={filtro === "completadas" ? "primary" : "secondary"}
+          disabled={guardando}
         />
       </div>
-    </li>
+
+      {tareasTotales === 0 ? (
+        <div className="empty-state">
+          <span style={{ fontSize: "2.5rem" }}>📝</span>
+          <p>¡Aún no tienes tareas! Agrega una para comenzar.</p>
+        </div>
+      ) : tareas.length === 0 && hayBusquedaOClasificacion ? (
+        <div className="empty-state">
+          <span style={{ fontSize: "2.5rem" }}>🔍</span>
+          <p>No se encontraron tareas con ese criterio.</p>
+        </div>
+      ) : (
+        <ul className="task-list">
+          {tareas.map(t => (
+            <TaskItem
+              key={t.id}
+              tarea={t}
+              onCompletar={onCompletar}
+              onEliminar={onEliminar}
+              onEditarTitulo={onEditarTitulo}
+              guardando={guardando}
+            />
+          ))}
+        </ul>
+      )}
+    </div>
   );
 };
 
-export default TaskItem;
+export default TaskList;
+
