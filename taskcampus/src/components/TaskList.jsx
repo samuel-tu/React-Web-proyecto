@@ -2,57 +2,61 @@ import Button from "./Button";
 import TaskItem from "./TaskItem";
 
 const TaskList = ({
-  tareas,
-  filtro,
+  tareas = [],
+  tareasTotales = 0,
+  busqueda = "",
+  filtro = "todas",
   onCambiarFiltro,
   onCompletar,
   onEliminar,
   onEditarTitulo,
-  onToggle,
+  guardando,
 }) => {
-  const handleCompletar = (id, completadaActual) => {
-    if (onToggle) {
-      onToggle(id, completadaActual);
-    } else if (onCompletar) {
-      onCompletar(id);
-    }
-  };
+  const hayBusquedaOClasificacion = busqueda.trim() !== "" || filtro !== "todas";
 
   return (
     <div>
-      {/* Botones de filtro de estado */}
-      <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+      <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
         <Button
           label="📋 Todas"
           onClick={() => onCambiarFiltro("todas")}
           variant={filtro === "todas" ? "primary" : "secondary"}
+          disabled={guardando}
         />
         <Button
           label="⏳ Pendientes"
           onClick={() => onCambiarFiltro("pendientes")}
           variant={filtro === "pendientes" ? "primary" : "secondary"}
+          disabled={guardando}
         />
         <Button
           label="✅ Completadas"
           onClick={() => onCambiarFiltro("completadas")}
           variant={filtro === "completadas" ? "primary" : "secondary"}
+          disabled={guardando}
         />
       </div>
 
-      {tareas.length === 0 ? (
-        <div className="empty-state" role="status">
-          <span className="empty-state-icon" aria-hidden="true">🔍</span>
+      {tareasTotales === 0 ? (
+        <div className="empty-state">
+          <span style={{ fontSize: "2.5rem" }}>📝</span>
+          <p>¡Aún no tienes tareas! Agrega una para comenzar.</p>
+        </div>
+      ) : tareas.length === 0 && hayBusquedaOClasificacion ? (
+        <div className="empty-state">
+          <span style={{ fontSize: "2.5rem" }}>🔍</span>
           <p>No se encontraron tareas con ese criterio.</p>
         </div>
       ) : (
         <ul className="task-list">
-          {tareas.map((tarea) => (
+          {tareas.map(t => (
             <TaskItem
-              key={tarea.id}
-              tarea={tarea}
-              onCompletar={handleCompletar}
+              key={t.id}
+              tarea={t}
+              onCompletar={onCompletar}
               onEliminar={onEliminar}
               onEditarTitulo={onEditarTitulo}
+              guardando={guardando}
             />
           ))}
         </ul>
