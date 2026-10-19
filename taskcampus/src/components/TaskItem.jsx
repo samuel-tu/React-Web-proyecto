@@ -1,89 +1,90 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Button from "./Button";
 
-const colorMap = {
-  pendiente: "#f59e0b",
-  completada: "#16a34a",
-  en_progreso: "#2563eb",
-};
-
-const TaskItem = ({ tarea, onCompletar, onEliminar, onEditarTitulo }) => {
+const TaskItem = ({
+  tarea,
+  onCompletar,
+  onEliminar,
+  onEditarTitulo,
+  guardando,
+}) => {
   const [editando, setEditando] = useState(false);
-  const [nuevoTitulo, setNuevoTitulo] = useState(tarea.titulo);
+  const [tituloEditado, setTituloEditado] = useState(tarea.titulo);
+  const commitEnCurso = useRef(false);
 
-  const estadoTexto = tarea.completada ? "completada" : "pendiente";
-  const badgeColor = colorMap[estadoTexto] || "#6b7280";
-
-  const badgeStyle = {
-    backgroundColor: badgeColor,
-    color: "#fff",
-    padding: "2px 10px",
-    borderRadius: "12px",
-    fontSize: "0.75rem",
-    fontWeight: "600",
-    border: "none",
-    fontFamily: "inherit",
-    cursor: "pointer",
+  const iniciarEdicion = () => {
+    if (guardando) return;
+    commitEnCurso.current = false;
+    setTituloEditado(tarea.titulo);
+    setEditando(true);
   };
 
-  // Permite guardar cambios al confirmar; si se deja vacio o no se hace nada, se mantiene lo original
-  const guardarEdicion = () => {
-    if (nuevoTitulo.trim() !== "" && nuevoTitulo !== tarea.titulo) {
+  const guardarCambios = () => {
+    if (commitEnCurso.current || guardando) return;
+    commitEnCurso.current = true;
+    const limpio = tituloEditado.trim();
+    if (limpio && limpio !== tarea.titulo) {
       if (onEditarTitulo) {
-        onEditarTitulo(tarea.id, nuevoTitulo.trim());
+        onEditarTitulo(tarea.id, { titulo: limpio });
       }
-    } else {
-      setNuevoTitulo(tarea.titulo);
     }
     setEditando(false);
   };
 
-  const manejarKeyDown = (e) => {
-    if (e.key === "Enter") {
-      guardarEdicion();
-    } else if (e.key === "Escape") {
-      setNuevoTitulo(tarea.titulo);
-      setEditando(false);
+  const handleToggle = () => {
+    if (guardando) return;
+    if (onCompletar) {
+      onCompletar(tarea.id, tarea.completada);
     }
   };
 
   return (
     <li className="task-item">
-      <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1, minWidth: 0 }}>
         <button
           type="button"
-          onClick={() => onCompletar(tarea.id, tarea.completada)}
-          style={badgeStyle}
-          aria-label={`Cambiar estado de la tarea (${estadoTexto})`}
+          onClick={handleToggle}
+          disabled={guardando}
+          style={{
+            backgroundColor: tarea.completada ? "#16a34a" : "#ca8a04",
+            color: "#ffffff",
+            padding: "3px 10px",
+            borderRadius: "12px",
+            fontSize: "0.75rem",
+            fontWeight: "600",
+            border: "none",
+            cursor: guardando ? "not-allowed" : "pointer",
+          }}
         >
-          {estadoTexto}
+          {tarea.completada ? "completada" : "pendiente"}
         </button>
 
         {editando ? (
           <input
             type="text"
-            value={nuevoTitulo}
-            onChange={(e) => setNuevoTitulo(e.target.value)}
-            onBlur={guardarEdicion}
-            onKeyDown={manejarKeyDown}
-            autoFocus
-            style={{
-              flex: 1,
-              padding: "4px 8px",
-              fontSize: "0.95rem",
-              borderRadius: "4px",
-              border: "1px solid #3b82f6",
-              outline: "none",
+            className="task-input task-title-input"
+            value={tituloEditado}
+            onChange={(e) => setTituloEditado(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                guardarCambios();
+              }
             }}
+            onBlur={guardarCambios}
+            autoFocus
+            disabled={guardando}
           />
         ) : (
           <span
-            onDoubleClick={() => setEditando(true)}
-            title="Doble clic para editar"
+            onDoubleClick={iniciarEdicion}
             style={{
               textDecoration: tarea.completada ? "line-through" : "none",
               color: tarea.completada ? "#94a3b8" : "inherit",
-              cursor: "pointer",
+              cursor: guardando ? "default" : "pointer",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
             {tarea.titulo}
@@ -94,13 +95,15 @@ const TaskItem = ({ tarea, onCompletar, onEliminar, onEditarTitulo }) => {
       <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
         <Button
           label={tarea.completada ? "Desmarcar" : "Completar"}
-          onClick={() => onCompletar(tarea.id, tarea.completada)}
+          onClick={handleToggle}
           variant={tarea.completada ? "success" : "primary"}
+          disabled={guardando}
         />
         <Button
           label="Eliminar"
           onClick={() => onEliminar(tarea.id)}
           variant="danger"
+          disabled={guardando}
         />
       </div>
     </li>
