@@ -12,10 +12,10 @@ const App = () => {
   const {
     tareas,
     cargando,
+    guardando,
     error,
     crearTarea,
     actualizarTarea,
-    editarTitulo,
     eliminarTarea,
   } = useTareas();
 
@@ -32,10 +32,14 @@ const App = () => {
     return true;
   });
 
+  const total = tareas.length;
+  const completadas = tareas.filter((t) => t.completada).length;
+  const pendientes = total - completadas;
+
   //Efecto 3
   useEffect(() => {
-    const pendientes = tareas.filter((t) => !t.completada).length;
-    document.title = `TaskCampus (${pendientes} pendientes)`;
+    const pendientesCount = tareas.filter((t) => !t.completada).length;
+    document.title = `TaskCampus (${pendientesCount} pendientes)`;
   }, [tareas]);
 
   //Efecto 4
@@ -57,6 +61,10 @@ const App = () => {
     actualizarTarea(id, { completada: !completadaActual });
   };
 
+  const handleEditarTitulo = (id, cambios) => {
+    actualizarTarea(id, cambios);
+  };
+
   const handleConfirmarEliminacion = () => {
     eliminarTarea(tareaAEliminar);
     setTareaAEliminar(null);
@@ -68,12 +76,25 @@ const App = () => {
       <Header title="TaskCampus" description="Gestiona tus tareas académicas" />
       <Navigation vistaActiva={vistaActiva} onCambiarVista={setVistaActiva} />
 
+      {/* Mensajes de carga con emojis */}
+      {cargando && (
+        <p className="estado-carga" role="status">
+          ⏳ Cargando tareas...
+        </p>
+      )}
+      {guardando && (
+        <p className="estado-carga" role="status">
+          💾 Guardando cambios...
+        </p>
+      )}
+      {error && <p className="estado-error">⚠️ Error: {error}</p>}
+
       {/* Vista 1: Resumen de tareas */}
       {vistaActiva === "resumen" && (
         <SummaryView
-          total={tareas.length}
-          completadas={tareas.filter((t) => t.completada).length}
-          pendientes={tareas.filter((t) => !t.completada).length}
+          total={total}
+          completadas={completadas}
+          pendientes={pendientes}
           mostrando={tareasFiltradas.length}
           filtroActual={filtro}
         />
@@ -81,7 +102,7 @@ const App = () => {
 
       {/* Vista 2: Agregar nueva tarea */}
       {vistaActiva === "nueva" && (
-        <NewTaskView onAgregar={handleAgregarTarea} />
+        <NewTaskView onAgregar={handleAgregarTarea} guardando={guardando} />
       )}
 
       {/* Vista 3: Listado de tareas */}
@@ -90,16 +111,19 @@ const App = () => {
           tareas={tareas}
           filtro={filtro}
           onCambiarFiltro={setFiltro}
-          onCompletar={(id) =>
+          onCompletar={(id, completadaActual) =>
             handleToggleCompletada(
               id,
-              tareas.find((t) => t.id === id)?.completada
+              completadaActual !== undefined
+                ? completadaActual
+                : tareas.find((t) => t.id === id)?.completada
             )
           }
           onEliminar={setTareaAEliminar}
-          onEditarTitulo={editarTitulo}
+          onEditarTitulo={handleEditarTitulo}
           cargando={cargando}
           error={error}
+          guardando={guardando}
         />
       )}
 
@@ -109,6 +133,7 @@ const App = () => {
         mensaje="¿Seguro que deseas eliminar esta tarea? Esta acción no se puede deshacer."
         onConfirmar={handleConfirmarEliminacion}
         onCancelar={() => setTareaAEliminar(null)}
+        guardando={guardando}
       />
     </div>
   );
