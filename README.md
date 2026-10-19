@@ -118,39 +118,42 @@ Las versiones de Node.js y npm corresponden al entorno local utilizado.
 La siguiente estructura es orientativa y debe ajustarse a la estructura real del repositorio.
 
 ```text
-React-Web-proyecto-main/
-├── taskcampus/
-│   ├── node_modules/
-│   ├── public/
-│   ├── src/
-│   │   ├── assets/
-│   │   ├── components/
-│   │   │   ├── Button.jsx
-│   │   │   ├── Header.jsx
-│   │   │   ├── Modal.jsx
-│   │   │   ├── Navigation.jsx
-│   │   │   ├── TaskForm.jsx
-│   │   │   ├── TaskItem.jsx
-│   │   │   ├── TaskList.jsx
-│   │   │   └── TaskSummary.jsx
-│   │   ├── hooks/
-│   │   │   └── useTareas.js
-│   │   ├── services/
-│   │   │   └── tareasService.js
-│   │   ├── views/
-│   │   │   ├── NewTaskView.jsx
-│   │   │   ├── SummaryView.jsx
-│   │   │   └── TasksView.jsx
-│   │   ├── App.css
-│   │   ├── App.jsx
-│   │   ├── index.css
-│   │   └── main.jsx
-│   ├── eslint.config.js
-│   ├── index.html
-│   ├── package-lock.json
-│   ├── package.json
-│   └── README.md
-└── README.md
+taskcampus/
+├── public/
+│   ├── favicon.svg
+│   └── icons.svg
+├── src/
+│   ├── assets/
+│   │   ├── hero.png
+│   │   ├── react.svg
+│   │   └── vite.svg
+│   ├── components/
+│   │   ├── Button.jsx
+│   │   ├── Header.jsx
+│   │   ├── Modal.jsx
+│   │   ├── Navigation.jsx
+│   │   ├── TaskForm.jsx
+│   │   ├── TaskItem.jsx
+│   │   ├── TaskList.jsx
+│   │   └── TaskSummary.jsx
+│   ├── hooks/
+│   │   └── useTareas.js
+│   ├── services/
+│   │   └── tareasService.js
+│   ├── views/
+│   │   ├── NewTaskView.jsx
+│   │   ├── SummaryView.jsx
+│   │   └── TasksView.jsx
+│   ├── App.css
+│   ├── App.jsx
+│   ├── index.css
+│   └── main.jsx
+├── .gitignore
+├── README.md
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+└── package.json
 ```
 
 ## 8. Instalación y ejecución
